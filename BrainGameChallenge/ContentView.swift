@@ -18,7 +18,6 @@ struct ContentView: View {
     @State private var alertText = ""
     @State private var showingAlert = false
     @State private var turns = 0
-    @State private var isGameOver = false
     
     func getCorrectResponse() -> Int{
         switch currentMove {
@@ -47,12 +46,9 @@ struct ContentView: View {
             alertText = "The correct answer was \(possibleMoves[correctResponse])"
         }
         
-        if (turns == TURNS_IN_GAME - 1){
-            isGameOver = true
-            alertText = "The last answer was \(move == correctResponse ? "correct" : "wrong") \n Final Score: \(score)"
-        } else {
-            showingAlert = true
-        }
+        
+        showingAlert = true
+        
     }
     
     func nextTurn(){
@@ -67,35 +63,41 @@ struct ContentView: View {
         shouldWin = Bool.random()
         turns = 0
         score = 0
-        isGameOver = false
     }
     
     
     var body: some View {
-        VStack{
-            Text("Computer chose: \(possibleMoves[currentMove])")
-                .alert(isPresented: $showingAlert) {
-                    Alert(title: Text(alertTitle), message: Text(alertText), dismissButton: .default(Text("Continue")){
-                        self.nextTurn()
-                    })
-                }
-            
-            Text("Make a selection so that you will: \(shouldWin ? "Win" : "Lose" )")
-            HStack{
-                ForEach(0..<3){ number in
-                    Button(action: {
-                        self.handleUserMove(number)
-                    }, label: {
-                        Text(possibleMoves[number])
-                    })
-                }
-            }.alert(isPresented: $isGameOver) {
-                Alert(title: Text("Game Over"), message: Text(alertText), dismissButton: .default(Text("Restart")){
+        Group{
+            if turns == TURNS_IN_GAME {
+                Text("Game Over!")
+                Text("Score: \(score)")
+                Button(action: {
                     self.restartGame()
+                }, label: {
+                    Text("Restart")
                 })
+            } else {
+                VStack{
+                    Text("Computer chose: \(possibleMoves[currentMove])")
+                    
+                    Text("Make a selection so that you will: \(shouldWin ? "Win" : "Lose" )")
+                    HStack{
+                        ForEach(0..<3){ number in
+                            Button(action: {
+                                self.handleUserMove(number)
+                            }, label: {
+                                Text(possibleMoves[number])
+                            })
+                        }
+                    }.alert(isPresented: $showingAlert) {
+                        Alert(title: Text(alertTitle), message: Text(alertText), dismissButton: .default(Text("Continue")){
+                            self.nextTurn()
+                        })
+                    }
+                }
             }
+            
         }
-        
     }
 }
 
